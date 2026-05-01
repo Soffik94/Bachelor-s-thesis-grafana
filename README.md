@@ -4,7 +4,7 @@
 - ping.js → health check
 - read.js → GET /users
 - write.js → POST /users
-- compute.js → CPU test
+- compute.js → POST /compute
 
 ## Spuštění
 
