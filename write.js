@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
 
-const BASE_URL = __ENV.TARGET_URL || 'http://10.0.0.4:3000';
+const BASE_URL = __ENV.BASE_URL || 'http://10.0.0.4:3000';
 
 export const options = {
   vus: 5,
