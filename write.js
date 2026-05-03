@@ -20,7 +20,7 @@ export default function () {
     },
   };
 
-  const res = http.post(`${BASE_URL}/users`, payload, params);
+  const res = http.post(`${BASE_URL}/items`, payload, params);
 
   if (res.status !== 201 && res.status !== 200) {
     console.error(`ERROR: status ${res.status}`);

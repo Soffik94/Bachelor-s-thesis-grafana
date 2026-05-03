@@ -9,7 +9,7 @@ export const options = {
 const BASE_URL = __ENV.BASE_URL || 'http://10.0.0.4:3000';
 
 export default function () {
-  const res = http.get(`${BASE_URL}/users`);
+  const res = http.get(`${BASE_URL}/items`);
 
   check(res, {
     'status is 200': (r) => r.status === 200,
