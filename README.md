@@ -56,6 +56,10 @@ Example PromQL filter:
 {__name__=~"k6_http_req_duration.*", runtime="deno", benchmark="write"}
 ```
 
+Write tests include `RUNTIME` and `RUN_ID` in generated `name` and `email`
+values. If `RUN_ID` is not set explicitly, k6 uses the current timestamp, so
+repeated write tests do not reuse the same e-mail addresses.
+
 ## Prometheus And Grafana
 
 Prometheus runs on `10.0.0.3:9090`. Grafana runs on `10.0.0.3:3000`.

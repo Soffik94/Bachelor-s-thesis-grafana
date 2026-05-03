@@ -90,6 +90,13 @@ Use one runtime and one benchmark type per measured run:
 
 k6 metrics are tagged with `runtime` and `benchmark`.
 
+For write tests, the generated rows include a run identifier in `name` and
+`email`. To set it manually:
+
+```bash
+RUN_ID=node-write-001 ./startWriteNode.sh
+```
+
 ## 5. Check Prometheus
 
 Open Prometheus:
