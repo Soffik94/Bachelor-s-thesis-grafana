@@ -64,6 +64,9 @@ repeated write tests do not reuse the same e-mail addresses.
 
 Prometheus runs on `10.0.0.3:9090`. Grafana runs on `10.0.0.3:3000`.
 
+Detailed Grafana setup instructions and thesis-oriented PromQL queries are in
+`GRAFANA_PROMETHEUS_QUERIES.md`.
+
 k6 sends metrics to Prometheus by remote write:
 
 ```bash
