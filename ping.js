@@ -2,8 +2,8 @@ import http from "k6/http";
 import { check, sleep } from "k6";
 
 export const options = {
-  vus: 10,           
-  duration: "10s",    
+  vus: 1000,           
+  duration: "60s",    
 };
 
 const BASE_URL = __ENV.BASE_URL || "http://10.0.0.4:3000";
@@ -16,5 +16,5 @@ export default function () {
     "response time < 200ms": (r) => r.timings.duration < 200,
   });
 
-  sleep(1);
+ // sleep(1);
 }
