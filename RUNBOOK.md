@@ -47,12 +47,16 @@ From `merici`:
 curl http://10.0.0.4:3000/ping
 curl http://10.0.0.4:3001/ping
 curl http://10.0.0.4:3002/ping
+curl "http://10.0.0.4:3000/compute?iterations=10"
+curl "http://10.0.0.4:3001/compute?iterations=10"
+curl "http://10.0.0.4:3002/compute?iterations=10"
 curl http://10.0.0.3:9090/-/ready
 curl http://10.0.0.2:9187/metrics
 ```
 
 Expected result: all commands return successfully. The three `/ping` endpoints
-return `{"message":"pong"}`.
+return `{"message":"pong"}`. The three `/compute?iterations=10` endpoints
+return JSON with `message`, `iterations`, `duration_ms`, and `hash`.
 
 ## 3. Prepare Database
 
@@ -67,6 +71,19 @@ TRUNCATE bun_schema.users RESTART IDENTITY;
 For read tests, seed all three schemas with the same amount of data.
 
 ## 4. Run Benchmarks
+
+For H3, run only one application runtime container at a time on the application
+server. Stop the two runtimes that are not currently measured, keep
+`node-exporter` running, and verify with `docker ps` before each run. k6,
+Prometheus, and Grafana stay on the measurement server.
+
+H3 routing assumptions:
+
+- Node.js uses Express Router as the framework baseline.
+- Deno uses `Deno.serve` with a custom lightweight route table and no external HTTP framework.
+- Bun uses `Bun.serve` native routes and no external HTTP framework.
+- `/ping`, `/compute`, and DB endpoints should go through one route-dispatch mechanism within each runtime.
+- `/ping` is the primary H3 scenario. `/compute` is supplementary and includes CPU/hash behavior, so interpret it more carefully.
 
 Use one runtime and one benchmark type per measured run:
 
@@ -99,6 +116,40 @@ For write tests, the generated rows include a run identifier in `name` and
 
 ```bash
 RUN_ID=node-write-001 ./startWriteNode.sh
+```
+
+### H3 smoke and discovery commands
+
+Ping smoke:
+
+```bash
+TARGET_RPS=100 TEST_ID=ping-node-smoke1 ./startPingNode.sh
+TARGET_RPS=100 TEST_ID=ping-deno-smoke1 ./startPingDeno.sh
+TARGET_RPS=100 TEST_ID=ping-bun-smoke1 ./startPingBun.sh
+```
+
+Compute smoke:
+
+```bash
+TARGET_RPS=10 TEST_ID=compute-node-rps10-smoke1 ./startComputeNode.sh
+TARGET_RPS=10 TEST_ID=compute-deno-rps10-smoke1 ./startComputeDeno.sh
+TARGET_RPS=10 TEST_ID=compute-bun-rps10-smoke1 ./startComputeBun.sh
+```
+
+Ping discovery:
+
+```bash
+TARGET_RPS=1000 TEST_ID=ping-node-rps1000-discovery1 ./startPingNode.sh
+TARGET_RPS=2000 TEST_ID=ping-node-rps2000-discovery1 ./startPingNode.sh
+TARGET_RPS=4000 TEST_ID=ping-node-rps4000-discovery1 ./startPingNode.sh
+```
+
+Compute discovery:
+
+```bash
+TARGET_RPS=25 TEST_ID=compute-node-rps25-discovery1 ./startComputeNode.sh
+TARGET_RPS=50 TEST_ID=compute-node-rps50-discovery1 ./startComputeNode.sh
+TARGET_RPS=100 TEST_ID=compute-node-rps100-discovery1 ./startComputeNode.sh
 ```
 
 ## 5. Check Prometheus

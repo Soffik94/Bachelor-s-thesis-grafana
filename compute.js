@@ -5,12 +5,12 @@ import { createBenchmarkConfig } from './k6Config.js';
 const config = createBenchmarkConfig('compute');
 const BASE_URL = config.BASE_URL;
 
-const ITERATIONS = __ENV.ITERATIONS || __ENV.N || 10000;
+const COMPUTE_ITERATIONS = __ENV.COMPUTE_ITERATIONS || __ENV.ITERATIONS || __ENV.N || 1000;
 
 export const options = config.options;
 
 export default function () {
-  const res = http.get(`${BASE_URL}/compute?iterations=${ITERATIONS}`);
+  const res = http.get(`${BASE_URL}/compute?iterations=${COMPUTE_ITERATIONS}`);
 
   check(res, {
     'status is 200': (r) => r.status === 200,

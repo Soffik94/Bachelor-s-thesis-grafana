@@ -94,7 +94,7 @@ Pokud chces v Grafane zobrazovat i `avg`, `min`, `max`, `p90` nebo `p95`,
 dopln do `docker run` v `runK6Benchmark.sh` tento radek:
 
 ```bash
--e K6_PROMETHEUS_RW_TREND_STATS=p(90),p(95),p(99),avg,min,max \
+-e K6_PROMETHEUS_RW_TREND_STATS=p(95),p(99),avg,min,max \
 ```
 
 Potom vzniknou napriklad tyto metriky:
@@ -283,7 +283,7 @@ RPS pouze pro I/O scenare pro H1:
 
 ```promql
 sum by (runtime, benchmark, testid) (
-  rate(k6_http_reqs_total{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement", benchmark=~"ping|read|write"}[$__rate_interval])
+  rate(k6_http_reqs_total{runtime=~"$runtime", benchmark=~"ping|read|write", testid=~"$testid", phase="measurement"}[$__rate_interval])
 )
 ```
 
@@ -325,7 +325,7 @@ P99 pro databazove scenare pro H2:
 
 ```promql
 max by (runtime, benchmark, testid) (
-  1000 * k6_http_req_duration_p99{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement", benchmark=~"read|write"}
+  1000 * k6_http_req_duration_p99{runtime=~"$runtime", benchmark=~"read|write", testid=~"$testid", phase="measurement"}
 )
 ```
 
@@ -353,7 +353,7 @@ a databazova komunikace.
 
 ```promql
 max by (runtime, benchmark, testid) (
-  1000 * k6_http_req_waiting_p99{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement", benchmark=~"read|write"}
+  1000 * k6_http_req_waiting_p99{runtime=~"$runtime", benchmark=~"read|write", testid=~"$testid", phase="measurement"}
 )
 ```
 
@@ -362,7 +362,7 @@ max by (runtime, benchmark, testid) (
 Tento dotaz funguje az po doplneni:
 
 ```bash
-K6_PROMETHEUS_RW_TREND_STATS=p(90),p(95),p(99),avg,min,max
+K6_PROMETHEUS_RW_TREND_STATS=p(95),p(99),avg,min,max
 ```
 
 PromQL:
@@ -433,7 +433,7 @@ Aktivni virtual users:
 
 ```promql
 max by (runtime, benchmark, testid) (
-  k6_vus{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement"}
+  k6_vus{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid"}
 )
 ```
 
@@ -441,7 +441,7 @@ Dropped iterations, kontrola load generatoru:
 
 ```promql
 sum by (runtime, benchmark, testid) (
-  rate(k6_dropped_iterations_total{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement"}[$__rate_interval])
+  rate(k6_dropped_iterations_total{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid"}[$__rate_interval])
 )
 ```
 
@@ -612,21 +612,21 @@ rate(pg_stat_database_blks_hit{datname=~"$db"}[$__rate_interval])
 | P99 latency by runtime | Time series | `1000 * max by (runtime, benchmark, testid) (k6_http_req_duration_p99{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement"})` |
 | Error rate | Time series | `100 * avg by (runtime, benchmark, testid) (k6_http_req_failed_rate{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement"})` |
 | Total requests | Stat | `sum by (runtime, benchmark, testid) (increase(k6_http_reqs_total{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement"}[$__range]))` |
-| Dropped iterations/s | Time series | `sum by (runtime, benchmark, testid) (rate(k6_dropped_iterations_total{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement"}[$__rate_interval]))` |
+| Dropped iterations/s | Time series | `sum by (runtime, benchmark, testid) (rate(k6_dropped_iterations_total{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid"}[$__rate_interval]))` |
 
 ### Hypothesis H1 row
 
 | Panel | Typ | Query |
 | --- | --- | --- |
-| I/O RPS comparison | Time series | `sum by (runtime, benchmark, testid) (rate(k6_http_reqs_total{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement", benchmark=~"ping|read|write"}[$__rate_interval]))` |
-| Average I/O RPS | Bar gauge | `avg_over_time((sum by (runtime, benchmark, testid) (rate(k6_http_reqs_total{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement", benchmark=~"ping|read|write"}[30s])))[$__range:$__interval])` |
+| I/O RPS comparison | Time series | `sum by (runtime, benchmark, testid) (rate(k6_http_reqs_total{runtime=~"$runtime", benchmark=~"ping|read|write", testid=~"$testid", phase="measurement"}[$__rate_interval]))` |
+| Average I/O RPS | Bar gauge | `avg_over_time((sum by (runtime, benchmark, testid) (rate(k6_http_reqs_total{runtime=~"$runtime", benchmark=~"ping|read|write", testid=~"$testid", phase="measurement"}[30s])))[$__range:$__interval])` |
 
 ### Hypothesis H2 row
 
 | Panel | Typ | Query |
 | --- | --- | --- |
-| DB P99 latency | Time series | `1000 * max by (runtime, benchmark, testid) (k6_http_req_duration_p99{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement", benchmark=~"read|write"})` |
-| DB TTFB P99 | Time series | `1000 * max by (runtime, benchmark, testid) (k6_http_req_waiting_p99{runtime=~"$runtime", benchmark=~"$benchmark", testid=~"$testid", phase="measurement", benchmark=~"read|write"})` |
+| DB P99 latency | Time series | `1000 * max by (runtime, benchmark, testid) (k6_http_req_duration_p99{runtime=~"$runtime", benchmark=~"read|write", testid=~"$testid", phase="measurement"})` |
+| DB TTFB P99 | Time series | `1000 * max by (runtime, benchmark, testid) (k6_http_req_waiting_p99{runtime=~"$runtime", benchmark=~"read|write", testid=~"$testid", phase="measurement"})` |
 | PostgreSQL connections | Time series | `pg_stat_database_numbackends{datname=~"$db"}` |
 | PostgreSQL inserted rows/s | Time series | `rate(pg_stat_database_tup_inserted{datname=~"$db"}[$__rate_interval])` |
 | PostgreSQL returned rows/s | Time series | `rate(pg_stat_database_tup_returned{datname=~"$db"}[$__rate_interval])` |

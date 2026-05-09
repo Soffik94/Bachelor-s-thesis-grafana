@@ -42,7 +42,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "1000 * max by (runtime, benchmark, testid) (\r\n  k6_http_req_duration_p99{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }\r\n)",
+                      "expr": "1000 * max by (runtime, benchmark, testid) (\r\n  k6_http_req_duration_p99{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -161,7 +161,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "1000 * max by (runtime, benchmark, testid) (\r\n  k6_http_req_waiting_p99{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\",\r\n    benchmark=~\"read|write\"\r\n  }\r\n)",
+                      "expr": "1000 * max by (runtime, benchmark, testid) (\r\n  k6_http_req_waiting_p99{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -280,7 +280,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "100 * avg by (runtime, benchmark, testid) (\r\n  k6_http_req_failed_rate{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }\r\n)",
+                      "expr": "100 * avg by (runtime, benchmark, testid) (\r\n  k6_http_req_failed_rate{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -399,7 +399,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "sum by (runtime, benchmark, testid) (\r\n  increase(k6_http_reqs_total{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }[$__range])\r\n)",
+                      "expr": "sum by (runtime, benchmark, testid) (\r\n  increase(k6_http_reqs_total{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }[$__range])\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -490,7 +490,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "max by (runtime, benchmark, testid) (\r\n  k6_vus{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }\r\n)",
+                      "expr": "max by (runtime, benchmark, testid) (\r\n  k6_vus{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\"\n  }\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -2154,7 +2154,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "sum by (runtime, benchmark, testid) (\r\n  rate(k6_http_reqs_total{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\",\r\n    benchmark=~\"ping|read|write\"\r\n  }[$__rate_interval])\r\n)",
+                      "expr": "sum by (runtime, benchmark, testid) (\r\n  rate(k6_http_reqs_total{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }[$__rate_interval])\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -2273,7 +2273,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "avg_over_time((\r\n  sum by (runtime, benchmark, testid) (\r\n    rate(k6_http_reqs_total{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\",\r\n    benchmark=~\"ping|read|write\"\r\n  }[30s])\r\n  )\r\n)[$__range:$__interval])",
+                      "expr": "avg_over_time((\r\n  sum by (runtime, benchmark, testid) (\r\n    rate(k6_http_reqs_total{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }[30s])\r\n  )\r\n)[$__range:$__interval])",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -2365,7 +2365,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "1000 * max by (runtime, benchmark, testid) (\r\n  k6_http_req_duration_p99{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\",\r\n    benchmark=~\"read|write\"\r\n  }\r\n)",
+                      "expr": "1000 * max by (runtime, benchmark, testid) (\r\n  k6_http_req_duration_p99{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -2484,7 +2484,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "1000 * max by (runtime, benchmark, testid) (\r\n  k6_http_req_waiting_p99{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\",\r\n    benchmark=~\"read|write\"\r\n  }\r\n)",
+                      "expr": "1000 * max by (runtime, benchmark, testid) (\r\n  k6_http_req_waiting_p99{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -2959,7 +2959,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "1000 * max by (runtime, benchmark, testid) (\r\n  k6_http_req_duration_p99{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }\r\n)",
+                      "expr": "1000 * max by (runtime, benchmark, testid) (\r\n  k6_http_req_duration_p99{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -3316,7 +3316,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "sum by (testid, runtime, benchmark) (\r\n  rate(k6_http_reqs_total{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }[30s])\r\n)",
+                      "expr": "sum by (testid, runtime, benchmark) (\r\n  rate(k6_http_reqs_total{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }[30s])\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -3398,7 +3398,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "1000 * max by (testid, runtime, benchmark) (\r\n  k6_http_req_duration_p99{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }\r\n)",
+                      "expr": "1000 * max by (testid, runtime, benchmark) (\r\n  k6_http_req_duration_p99{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -3642,7 +3642,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "sum by (runtime, benchmark, testid) (\r\n  rate(k6_http_reqs_total{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }[$__rate_interval])\r\n)",
+                      "expr": "sum by (runtime, benchmark, testid) (\r\n  rate(k6_http_reqs_total{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }[$__rate_interval])\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -3761,7 +3761,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "avg_over_time((\r\n  sum by (runtime, benchmark, testid) (\r\n    rate(k6_http_reqs_total{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }[30s])\r\n  )\r\n)[$__range:$__interval])",
+                      "expr": "avg_over_time((\r\n  sum by (runtime, benchmark, testid) (\r\n    rate(k6_http_reqs_total{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }[30s])\r\n  )\r\n)[$__range:$__interval])",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -3880,7 +3880,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "max_over_time((\r\n  sum by (runtime, benchmark, testid) (\r\n    rate(k6_http_reqs_total{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }[30s])\r\n  )\r\n)[$__range:$__interval])",
+                      "expr": "max_over_time((\r\n  sum by (runtime, benchmark, testid) (\r\n    rate(k6_http_reqs_total{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\",\n    phase=\"measurement\"\n  }[30s])\r\n  )\r\n)[$__range:$__interval])",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },
@@ -3999,7 +3999,7 @@
                     "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
-                      "expr": "sum by (runtime, benchmark, testid) (\r\n  rate(k6_dropped_iterations_total{\r\n    runtime=~\"$runtime\",\r\n    benchmark=~\"$benchmark\",\r\n    testid=~\"$testid\",\r\n    phase=\"measurement\"\r\n  }[$__rate_interval])\r\n)",
+                      "expr": "sum by (runtime, benchmark, testid) (\r\n  rate(k6_dropped_iterations_total{\n    runtime=~\"$runtime\",\n    benchmark=~\"$benchmark\",\n    testid=~\"$testid\"\n  }[$__rate_interval])\r\n)",
                       "legendFormat": "{{runtime}} / {{benchmark}} / {{testid}}",
                       "range": true
                     },

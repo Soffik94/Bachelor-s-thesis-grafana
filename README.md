@@ -156,6 +156,59 @@ Common environment variables:
 | `PRE_ALLOCATED_VUS` | `100` |
 | `MAX_VUS` | `1000` |
 | `COOLDOWN_DURATION` | `60` |
+| `COMPUTE_ITERATIONS` | `1000` |
+| `K6_PROMETHEUS_RW_TREND_STATS` | `p(95),p(99),avg,min,max` |
+
+## H3 Ping And Compute Checklist
+
+Use `/ping` as the primary H3 benchmark because it isolates HTTP stack,
+routing, framework/runtime overhead, and JSON response serialization. Use
+`/compute` as a supplementary CPU-bound scenario with the same
+`iterations` query parameter across runtimes.
+
+Routing methodology for H3:
+
+- Node.js uses Express Router as the representative production framework layer.
+- Deno uses `Deno.serve` with a custom lightweight route table and no external HTTP framework.
+- Bun uses `Bun.serve` native routes and no external HTTP framework.
+- `/ping`, `/compute`, and DB endpoints must pass through the same route dispatch mechanism inside each runtime.
+- `/compute` is not interpreted as a pure router benchmark because it also includes SHA-256 hashing work.
+
+Before each H3 run:
+
+- run only the runtime container being measured on the application server
+- stop the other runtime containers
+- keep only necessary helper containers such as `node-exporter`
+- keep k6, Prometheus, and Grafana on the measurement server
+- verify `docker ps` on the application server and measurement server
+- verify the target endpoint with `curl`
+- use a unique `TEST_ID`
+- use the same warmup, measurement, and cooldown durations for Node, Deno, and Bun
+- evaluate only k6 metrics with `phase="measurement"`
+
+Smoke commands:
+
+```bash
+TARGET_RPS=100 TEST_ID=ping-node-smoke1 ./startPingNode.sh
+TARGET_RPS=100 TEST_ID=ping-deno-smoke1 ./startPingDeno.sh
+TARGET_RPS=100 TEST_ID=ping-bun-smoke1 ./startPingBun.sh
+
+TARGET_RPS=10 TEST_ID=compute-node-rps10-smoke1 ./startComputeNode.sh
+TARGET_RPS=10 TEST_ID=compute-deno-rps10-smoke1 ./startComputeDeno.sh
+TARGET_RPS=10 TEST_ID=compute-bun-rps10-smoke1 ./startComputeBun.sh
+```
+
+Discovery commands:
+
+```bash
+TARGET_RPS=1000 TEST_ID=ping-node-rps1000-discovery1 ./startPingNode.sh
+TARGET_RPS=2000 TEST_ID=ping-node-rps2000-discovery1 ./startPingNode.sh
+TARGET_RPS=4000 TEST_ID=ping-node-rps4000-discovery1 ./startPingNode.sh
+
+TARGET_RPS=25 TEST_ID=compute-node-rps25-discovery1 ./startComputeNode.sh
+TARGET_RPS=50 TEST_ID=compute-node-rps50-discovery1 ./startComputeNode.sh
+TARGET_RPS=100 TEST_ID=compute-node-rps100-discovery1 ./startComputeNode.sh
+```
 
 ## Preflight Checks
 
@@ -165,6 +218,9 @@ Before running benchmarks from `merici`, verify connectivity:
 curl http://10.0.0.4:3000/ping
 curl http://10.0.0.4:3001/ping
 curl http://10.0.0.4:3002/ping
+curl "http://10.0.0.4:3000/compute?iterations=10"
+curl "http://10.0.0.4:3001/compute?iterations=10"
+curl "http://10.0.0.4:3002/compute?iterations=10"
 curl http://10.0.0.3:9090/-/ready
 curl http://10.0.0.2:9187/metrics
 ```
