@@ -24,6 +24,7 @@ DEBUG_READ_ERRORS="${DEBUG_READ_ERRORS:-0}"
 
 echo "Running ${BENCHMARK} benchmark for ${RUNTIME}"
 echo "TEST_ID=${TEST_ID} TARGET_RPS=${TARGET_RPS} WARMUP=${WARMUP_DURATION} MEASURE=${MEASURE_DURATION}"
+echo "BASE_URL=${BASE_URL} K6_SCRIPT=${K6_SCRIPT}"
 
 docker run --rm -i \
   --user 0 \

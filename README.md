@@ -147,6 +147,7 @@ Common environment variables:
 | Variable | Default |
 | --- | --- |
 | `BASE_URL` | runtime-specific app URL |
+| `BUN_BASE_URL` | optional Bun app URL for Bun wrapper scripts |
 | `RUNTIME` | wrapper-specific runtime |
 | `BENCHMARK` | wrapper-specific benchmark |
 | `TEST_ID` | generated from benchmark, runtime, RPS, timestamp |
