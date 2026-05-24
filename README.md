@@ -7,14 +7,17 @@ application server.
 
 ## Server Topology
 
-| Role | Hostname | Public IP | Private IP | Services |
-| --- | --- | --- | --- | --- |
-| Database server | `db` | `138.199.161.252` | `10.0.0.2` | PostgreSQL, postgres-exporter, node-exporter |
-| Measurement server | `merici` | `178.105.65.16` | `10.0.0.3` | Grafana, Prometheus, k6 runner, node-exporter |
-| Application server | `app` | `178.105.79.83` | `10.0.0.4` | Node.js app, Deno app, Bun app, node-exporter |
+| Role | Hostname | Private address used by scripts | Services |
+| --- | --- | --- | --- |
+| Database server | `db` | `10.0.0.2` | PostgreSQL, postgres-exporter, node-exporter |
+| Measurement server | `merici` | `10.0.0.3` | Grafana, Prometheus, k6 runner, node-exporter |
+| Application server | `app` | `10.0.0.4` | Node.js app, Deno app, Bun app, node-exporter |
 
 Benchmark traffic uses the private address of the application server:
-`10.0.0.4`.
+`10.0.0.4`. Public IP addresses, SSH endpoints, credentials, and provider
+details are intentionally not documented here because this repository can be
+published on GitHub. Keep public access details in a private runbook or
+password manager instead.
 
 ## Application Targets
 
@@ -40,6 +43,16 @@ Each runtime has a matching shell wrapper:
 | Node.js | `./startPingNode.sh` | `./startComputeNode.sh` | `./startReadNode.sh` | `./startWriteNode.sh` |
 | Deno | `./startPingDeno.sh` | `./startComputeDeno.sh` | `./startReadDeno.sh` | `./startWriteDeno.sh` |
 | Bun | `./startPingBun.sh` | `./startComputeBun.sh` | `./startReadBun.sh` | `./startWriteBun.sh` |
+
+Supporting files:
+
+| File | Purpose |
+| --- | --- |
+| `runK6Benchmark.sh` | shared Docker/k6 runner used by all start scripts |
+| `k6Config.js` | shared k6 scenario, tag, and environment parsing |
+| `prometheus.yml` | Prometheus scrape configuration for exporters |
+| `export.sh` | creates a local `export_run_summary.sh` helper for CSV summaries |
+| `pravaSkriptum.sh` | sets executable permissions for local shell scripts |
 
 ## Load Model And Labels
 
@@ -72,10 +85,18 @@ mixed into the evaluated data.
 
 Write tests include `RUNTIME` and the run identifier in generated `name` and
 `email` values. If `RUN_ID` is not set explicitly, the scripts use `TEST_ID`.
+`read.js` and `write.js` also increment custom counters for unexpected HTTP
+statuses. Response bodies are logged only when `DEBUG_READ_ERRORS=1` or
+`DEBUG_WRITE_ERRORS=1` is set, so normal benchmark runs do not flood logs with
+application responses.
 
 ## Prometheus And Grafana
 
-Prometheus runs on `10.0.0.3:9090`. Grafana runs on `10.0.0.3:3000`.
+Prometheus runs on the measurement server private address
+`http://10.0.0.3:9090`. Grafana runs on `http://10.0.0.3:3000`. If you need to
+open them from outside the private network, use a VPN or SSH tunnel and refer
+to the external host as `http://<measurement-host>:9090` or
+`http://<measurement-host>:3000` in public documentation.
 
 Detailed Grafana setup instructions and thesis-oriented PromQL queries are in
 `GRAFANA_PROMETHEUS_QUERIES.md`.
@@ -120,7 +141,7 @@ On the measurement server:
 
 ```bash
 cd ~/Merici
-chmod +x start*.sh
+chmod +x start*.sh runK6Benchmark.sh export.sh
 
 TARGET_RPS=2000 TEST_ID=ping-node-rps2000-run1 ./startPingNode.sh
 TARGET_RPS=2000 TEST_ID=ping-deno-rps2000-run1 ./startPingDeno.sh
@@ -146,10 +167,13 @@ Common environment variables:
 
 | Variable | Default |
 | --- | --- |
-| `BASE_URL` | runtime-specific app URL |
-| `BUN_BASE_URL` | optional Bun app URL for Bun wrapper scripts |
-| `RUNTIME` | wrapper-specific runtime |
-| `BENCHMARK` | wrapper-specific benchmark |
+| `BASE_URL` | generic app URL override |
+| `NODE_BASE_URL` | optional Node app URL; falls back to `BASE_URL`, then `http://10.0.0.4:3000` |
+| `DENO_BASE_URL` | optional Deno app URL; falls back to `BASE_URL`, then `http://10.0.0.4:3001` |
+| `BUN_BASE_URL` | optional Bun app URL; falls back to `BASE_URL`, then `http://10.0.0.4:3002` |
+| `RUNTIME` | set by wrapper scripts; direct `runK6Benchmark.sh` default is `node` |
+| `BENCHMARK` | set by wrapper scripts; direct `runK6Benchmark.sh` default is `ping` |
+| `K6_SCRIPT` | set by wrapper scripts; direct default is `${BENCHMARK}.js` |
 | `TEST_ID` | generated from benchmark, runtime, RPS, timestamp |
 | `TARGET_RPS` | `1000` |
 | `WARMUP_DURATION` | `1m` |
@@ -158,7 +182,17 @@ Common environment variables:
 | `MAX_VUS` | `1000` |
 | `COOLDOWN_DURATION` | `60` |
 | `COMPUTE_ITERATIONS` | `1000` |
+| `ITERATIONS`, `N` | compatibility aliases for `COMPUTE_ITERATIONS` |
+| `RUN_ID` | defaults to `TEST_ID`; used in generated write-test data |
+| `DEBUG_READ_ERRORS` | `0` |
+| `DEBUG_WRITE_ERRORS` | `0` |
+| `K6_PROMETHEUS_RW_SERVER_URL` | `http://10.0.0.3:9090/api/v1/write` |
+| `PROMETHEUS_RW_SERVER_URL` | compatibility alias for `K6_PROMETHEUS_RW_SERVER_URL` |
 | `K6_PROMETHEUS_RW_TREND_STATS` | `p(95),p(99),avg,min,max` |
+
+The wrapper scripts set `RUNTIME`, `BENCHMARK`, and `K6_SCRIPT` from the file
+name to avoid accidental label mismatches. Use `runK6Benchmark.sh` directly if
+you need to run a custom script/label combination.
 
 ## H3 Ping And Compute Checklist
 
@@ -237,6 +271,20 @@ curl http://10.0.0.2:9100/metrics
 If a node-exporter container does not publish port `9100`, it must either run in
 host network mode or be recreated with a reachable port mapping.
 
+## Export Helper
+
+`export.sh` creates a local helper script named `export_run_summary.sh`. The
+generated helper queries Prometheus and appends one summary row to
+`h1_runs_summary.csv`:
+
+```bash
+bash export.sh
+PROM=http://10.0.0.3:9090 ./export_run_summary.sh ping-node-rps2000-run1 node ping 2000 1
+```
+
+CSV files and the generated helper are ignored by Git because they are local
+measurement artifacts.
+
 ## Database Notes
 
 Read tests require existing rows in the corresponding runtime schema. Write
@@ -250,3 +298,16 @@ tests insert rows into runtime-specific schemas:
 
 For comparable read/write tests, reset or seed all schemas consistently before
 each measured run.
+
+## Public Repository Security Notes
+
+- Do not commit public IP addresses, SSH usernames, VPN details, Grafana
+  credentials, Prometheus basic-auth tokens, database credentials, or `.env`
+  files.
+- Keep Grafana, Prometheus, node-exporter, postgres-exporter, and PostgreSQL
+  reachable only on a private network, VPN, firewall allowlist, or SSH tunnel.
+- The included `10.0.0.x` addresses are deployment defaults for the private
+  benchmark network; override them with environment variables when running in a
+  different environment.
+- Generated CSV exports can reveal test naming, timings, and infrastructure
+  behavior, so they are ignored by `.gitignore`.

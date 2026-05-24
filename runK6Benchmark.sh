@@ -21,16 +21,16 @@ K6_PROMETHEUS_RW_TREND_STATS="${K6_PROMETHEUS_RW_TREND_STATS:-p(95),p(99),avg,mi
 TEST_ID="${TEST_ID:-${BENCHMARK}-${RUNTIME}-rps${TARGET_RPS}-$(date -u +%Y%m%dT%H%M%SZ)}"
 RUN_ID="${RUN_ID:-${TEST_ID}}"
 DEBUG_READ_ERRORS="${DEBUG_READ_ERRORS:-0}"
+DEBUG_WRITE_ERRORS="${DEBUG_WRITE_ERRORS:-0}"
 
 echo "Running ${BENCHMARK} benchmark for ${RUNTIME}"
 echo "TEST_ID=${TEST_ID} TARGET_RPS=${TARGET_RPS} WARMUP=${WARMUP_DURATION} MEASURE=${MEASURE_DURATION}"
 echo "BASE_URL=${BASE_URL} K6_SCRIPT=${K6_SCRIPT}"
 
 docker run --rm -i \
-  --user 0 \
   -e "K6_PROMETHEUS_RW_SERVER_URL=${K6_PROMETHEUS_RW_SERVER_URL}" \
   -e "K6_PROMETHEUS_RW_TREND_STATS=${K6_PROMETHEUS_RW_TREND_STATS}" \
-  -v "${SCRIPT_DIR}:/scripts" \
+  -v "${SCRIPT_DIR}:/scripts:ro" \
   grafana/k6 run \
   -e "BASE_URL=${BASE_URL}" \
   -e "RUNTIME=${RUNTIME}" \
@@ -46,6 +46,7 @@ docker run --rm -i \
   -e "N=${N}" \
   -e "RUN_ID=${RUN_ID}" \
   -e "DEBUG_READ_ERRORS=${DEBUG_READ_ERRORS}" \
+  -e "DEBUG_WRITE_ERRORS=${DEBUG_WRITE_ERRORS}" \
   -o experimental-prometheus-rw \
   --tag "runtime=${RUNTIME}" \
   --tag "benchmark=${BENCHMARK}" \

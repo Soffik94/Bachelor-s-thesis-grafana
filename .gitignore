@@ -1,5 +1,12 @@
 node_modules/
 .env
+.env.*
 *.log
 *.tmp
+*.csv
+*.tsv
 .DS_Store
+export_run_summary.sh
+results/
+exports/
+k6-results/

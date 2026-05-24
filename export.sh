@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 cat > export_run_summary.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail

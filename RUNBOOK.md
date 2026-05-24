@@ -1,5 +1,10 @@
 # Benchmark Runbook
 
+This runbook is safe for a public GitHub repository: it uses private benchmark
+network addresses and placeholders for any externally reachable host. Keep
+public IP addresses, SSH details, Grafana credentials, and database credentials
+in a private operational note.
+
 ## 1. Verify Containers
 
 Database server `10.0.0.2`:
@@ -157,8 +162,11 @@ TARGET_RPS=100 TEST_ID=compute-node-rps100-discovery1 ./startComputeNode.sh
 Open Prometheus:
 
 ```text
-http://178.105.65.16:9090
+http://<measurement-host>:9090
 ```
+
+Prefer a VPN or SSH tunnel instead of exposing Prometheus directly to the
+internet.
 
 Useful checks:
 
@@ -174,8 +182,10 @@ k6_http_reqs_total
 Open Grafana:
 
 ```text
-http://178.105.65.16:3000
+http://<measurement-host>:3000
 ```
+
+Do not commit Grafana credentials or public access URLs to this repository.
 
 Import or use the current measurement dashboard:
 
@@ -208,3 +218,4 @@ http://10.0.0.3:9090
 | read test returns empty array | table has no seeded rows | seed the runtime schema before read benchmark |
 | Grafana cannot distinguish runtimes | k6 tags missing | use the provided `start*.sh` scripts |
 | Dropped iterations are non-zero | k6 load generator could not keep target arrival rate | increase `PRE_ALLOCATED_VUS`/`MAX_VUS` or lower `TARGET_RPS` |
+| Need one response body for debugging | normal runs suppress response-body logging | set `DEBUG_READ_ERRORS=1` or `DEBUG_WRITE_ERRORS=1` for a short smoke run |

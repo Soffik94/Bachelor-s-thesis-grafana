@@ -15,6 +15,11 @@ merici repozitar `Merici`, kde k6 posila metriky do Promethea pres
 Aktualni setup meri aplikace z klientské strany pomoci k6 a infrastrukturu pres
 node-exporter a postgres-exporter. Aplikace samotne nevystavuji `/metrics`.
 
+Bezpecnostni poznamka pro GitHub: verejne IP adresy, prihlasovaci udaje,
+SSH/VPN detaily a Grafana hesla do dokumentace ani exportu nepatri. Externi
+pristup uvadej jako `http://<measurement-host>:9090` nebo pres soukromy
+operacni runbook.
+
 ## Vztah k hypotezam
 
 | Hypoteza | Primarni dotazy |
@@ -75,7 +80,7 @@ curl http://10.0.0.3:9090/api/v1/targets
 Prometheus UI:
 
 ```text
-http://178.105.65.16:9090
+http://<measurement-host>:9090
 ```
 
 ## k6 remote write setup
@@ -87,26 +92,24 @@ Stavajici start skripty uz pouzivaji:
 -o experimental-prometheus-rw
 ```
 
-Pro P99 staci aktualni konfigurace. k6 remote write ma ve vychozim nastaveni
-pro trend metriky pouze `p(99)`, tedy napriklad `k6_http_req_duration_p99`.
-
-Pokud chces v Grafane zobrazovat i `avg`, `min`, `max`, `p90` nebo `p95`,
-dopln do `docker run` v `runK6Benchmark.sh` tento radek:
+Aktualni `runK6Benchmark.sh` nastavuje trend statistiky takto:
 
 ```bash
 -e K6_PROMETHEUS_RW_TREND_STATS=p(95),p(99),avg,min,max \
 ```
 
-Potom vzniknou napriklad tyto metriky:
+Vzniknou napriklad tyto metriky:
 
 ```text
-k6_http_req_duration_p90
 k6_http_req_duration_p95
 k6_http_req_duration_p99
 k6_http_req_duration_avg
 k6_http_req_duration_min
 k6_http_req_duration_max
 ```
+
+Pokud tuto promennou prepisujes rucne, nech v ni alespon `p(99)`, jinak
+dotazy s `k6_http_req_duration_p99` nebudou mit data.
 
 Start skripty predavaji `testid` automaticky. Pokud `TEST_ID` nezadas rucne,
 vygeneruje se z benchmarku, runtime, ciloveho RPS a timestampu:
@@ -128,7 +131,7 @@ TEST_ID=read-bun-01 ./startReadBun.sh
 Grafana UI:
 
 ```text
-http://178.105.65.16:3000
+http://<measurement-host>:3000
 ```
 
 Datasource:
@@ -407,9 +410,11 @@ Check pass rate v procentech:
 )
 ```
 
-Poznamka: `write.js` aktualne nema `check()`, jen vypisuje chybu do konzole,
-takze pro write scenar muze byt `k6_checks_rate` prazdny. Pro write pouzivej
-radeji `k6_http_req_failed_rate` nebo filtr pres `status`, pokud je dostupny.
+Poznamka: `write.js` aktualne nema `check()`, takze pro write scenar muze byt
+`k6_checks_rate` prazdny. Pri neocekavanem HTTP statusu inkrementuje custom
+counter `write_unexpected_status`; detail odpovedi vypise jen pri
+`DEBUG_WRITE_ERRORS=1`. Pro write pouzivej hlavne `k6_http_req_failed_rate`,
+custom counter nebo filtr pres `status`, pokud je dostupny.
 
 ### 6. Celkovy pocet pozadavku a iteraci
 
@@ -684,6 +689,17 @@ Priklad dotazu pro app-server RAM vzorku:
 ```
 
 Pokud `TEST_ID` nezadas rucne, start skripty ho vygeneruji automaticky.
+
+Repozitar obsahuje i pomocny `export.sh`. Ten pouze vytvori lokalni skript
+`export_run_summary.sh`; samotny export pak spustis napriklad:
+
+```bash
+bash export.sh
+PROM=http://10.0.0.3:9090 ./export_run_summary.sh ping-node-rps2000-run1 node ping 2000 1
+```
+
+Vystup se zapisuje do `h1_runs_summary.csv`. CSV soubory a vygenerovany helper
+jsou ignorovane Gitem, protoze jde o lokalni namerene artefakty.
 
 ## Doporučene jednotky v Grafane
 
